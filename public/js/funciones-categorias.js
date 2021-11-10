@@ -1,104 +1,110 @@
-$(document).ready(function () 
-{
-    /*Carga Contenido Categorias */
-    $("a.categorias").click(function (event) {
-        $("#contenido-procesos").load("procesos_varios/categorias/principal_categorias.php");
+$(document).ready(function() {
+    /* carga contenido Categorias*/
+    $(".categorias").click(function(event) {
+        $("#contenido-panel").load("./views/panel/categorias/principal.php");
         event.preventDefault();
     });
-    /*Envía el número de pagina categorias..*/
-    $("a.pagina").click(function (event) {
+
+     /* Paginado*/
+     $("a.pagina").click(function(event) {
         var num, reg;
         num = $(this).attr("v-num");
-        reg = $(this).attr("num-reg")
-        $("#contenido-procesos").load("procesos_varios/categorias/principal_categorias.php?num=" + num + "&num_reg=" + reg);
+        reg = $(this).attr("num-reg");
+        $("#contenido-panel").load("./views/panel/categorias/principal.php?num=" + num + "&num_reg=" + reg);
         event.preventDefault();
     });
 
-    /*Buscar Categoria*/
-    $('#like-categoria').on('change', function (event) {
-        var valor;
-        valor = $("#like-categoria").val();
-        if (valor.trim() == "") {
-            alertify.alert("Busca Categoría", "No ingreso la categoría a buscar");
-            event.preventDefault();
-        }
-        else {
-            $("#contenido-procesos").load("procesos_varios/categorias/principal_categorias.php?like=1&valor=" + valor);
-        }
-    });
-
-    /*Aumentar el numero de registros tabla Categorías*/
-    $('#select-reg').on('change', function (event) {
+    /* Aumenta N° registros para el paginado*/
+    $("#select-reg").on('change', function(event) {
         var valor;
         valor = $("#select-reg option:selected").val();
-
-        $("#contenido-procesos").load("procesos_varios/categorias/principal_categorias.php?n_reg=1&num_reg=" + valor);
-    });
-
-    /*Carga Formulario Nueva Categorias */
-    $("#new-cate").click(function (event) {
-        $("#contenido-procesos").load("procesos_varios/categorias/form_insert.php");
+        $("#contenido-panel").load("./views/panel/categorias/principal.php?num_reg=" + valor);
         event.preventDefault();
     });
 
-    /*Carga Formulario Editar Categorias */
-    $("a.edit-categoria").click(function (event) {
-        var idcategoria;
-        idcategoria = $(this).attr("id-categoria");
+    /* Buscar Categoria*/
+    $("#like-cate").on('change', function(event) {
+        var valor;
+        valor = $("#like-cate").val();
+        if (valor.trim() == "") {
+            alertify.alert("Busca Categoria", "No ingreso el nombre ó código de categoria a buscar...");
+            event.preventDefault();
+        } else {
+            //alert(valor);
+            $("#contenido-panel").load("./views/panel/categorias/principal.php?like=1&valor=" + valor);
+            //event.preventDefault();
+        }
+    });
 
-        $("#contenido-procesos").load("procesos_varios/categorias/form_categoria.php?update=1&idcategoria=" + idcategoria);
+    /* Despliega Modal Registro Categoria*/
+    $("a.new-cate").click(function(event) {
+        $("#ModalNewCategoria").modal("show");
+        $("#DataFormCategoria").load("./views/panel/categorias/form_categoria.php");
         event.preventDefault();
     });
 
-    /*Elimina Categoria */
-    $("a.del-categoria").click(function (event) {
-        var idcategoria;
-        idcategoria = $(this).attr("id-categoria");
-        if (confirm("Seguro/a de eliminar categoría...?")) {
-            $("#contenido-procesos").load("procesos_varios/categorias/delete_cate.php?idcategoria=" + idcategoria);
-            event.preventDefault();
-        }
-        else {
-            //alertify.alert('Eliminar Categoría', 'Proceso cancelado..');
-            alertify.error("Proceso cancelado..");
-            event.preventDefault();
-        }
-
+    /*Guardar nueva categoria*/
+    $("#FormNewCate").on("submit", function(event) {
+        event.preventDefault();
+        var formData = new FormData(document.getElementById("FormNewCate"));
+            formData.append("dato", "valor");
+            $.ajax({
+                    url: "./views/panel/categorias/insert.php",
+                    type: "POST",
+                    dataType: "html",
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                })
+                .done(function(res) {
+                    $("#contenido-panel").html(res);
+                });
+              
     });
-    // Insertar Categoría a BD
-    $("#save-categoria").click(function (event) {
-        var categoria;
-        categoria = $("#categoria").val();
+    /* Despliega Modal para Editar Categoria*/
+    $(".upd-cate").click(function() {
+        var idcategoria = $(this).attr("id-categoria");
+        $('#CateUpd').modal('show');
+        $("#dataCategoria").load("./views/panel/categorias/edit_form_categoria.php?idcategoria=" + idcategoria);
+    });
 
-        if (categoria == "") {
-            alertify.alert("Registro Categoría", "El campo categoría esta vacio...");
+    /* Actualizar Categoria*/
+    $("#UpdateCategoria").on("submit", function(event) {
+        var tipo = $('#tipo-user').val();
+        event.preventDefault();
+        if (tipo == 0) {
+            alertify.alert("Registro Usuario", "No seleciono el tipo de usuario...");
             event.preventDefault();
-        }
-        else {
-            $("#contenido-procesos").load("procesos_varios/categorias/IUD_categoria.php?insert_cate=1&categoria=" + categoria);
-            event.preventDefault();
+        } else {
+            var formData = new FormData(document.getElementById("UpdateCategoria"));
+            formData.append("dato", "valor");
+            $.ajax({
+                    url: "./views/panel/categorias/update.php",
+                    type: "POST",
+                    dataType: "html",
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                })
+                .done(function(res) {
+                    $("#contenido-panel").html(res);
+                });
         }
     });
-    /*Actualiza Categoría */
-    $("#update-cate").on("submit", function (e) {
-        e.preventDefault();
 
-        var formData = new FormData(document.getElementById("update-cate"));
-
-        formData.append("dato", "valor");
-
-        $.ajax({
-            url: "procesos_varios/categorias/update_categoria.php",
-            type: "post",
-            dataType: "html",
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false
-        })
-            .done(function (res) {
-                $("#contenido-procesos").html(res);
+    /* Eliminar Categoria */
+    $("a.del-cate").click(function(event) {
+        var idcategoria = $(this).attr("id-categoria");
+        alertify.confirm('Eliminar Categoria', '¿Seguro/a de eliminar esta categoria?',
+            function() {
+                $("#contenido-panel").load("./views/panel/categorias/del.php?idcategoria=" + idcategoria);
+                event.preventDefault();
+            },
+            function() {
+                alertify.error('Proceso cancelado...');
             });
+        event.preventDefault();
     });
-    /**/
 });
